@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài Tập Nối Từ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.5s;
+        }
+
+        .container {
+            max-width: 450px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #2196F3;
+        }
+
+        .button-group {
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            margin: 0 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .start {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .start:hover {
+            background-color: #45a049;
+        }
+
+        .data {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        .data:hover {
+            background-color: #1e87db;
+        }
+
+        .reset {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .reset:hover {
+            background-color: #da190b;
+        }
+
+        .question {
+            margin: 20px 0;
+        }
+
+        #studentName {
+            border: 2px solid #2196F3;
+            border-radius: 30px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            font-size: 24px;
+            margin: 0 auto;
+            width: 280px;
+        }
+
+        .word-pairs {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .column {
+            width: 45%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .word {
+            border: 2px solid #2196f3;
+            padding: 10px;
+            margin: 5px 0;
+            cursor: pointer;
+            background-color: #fff;
+            border-radius: 10px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 40px;
+            font-size: 22px;
+        }
+
+        .word.chinese {
+            font-family: '楷体', sans-serif;
+            font-size: 30px;
+        }
+
+        .word.meaning {
+            font-family: Arial, sans-serif;
+        }
+
+        .word:hover {
+            background-color: #f0f0f0;
+        }
+
+        .word.correct {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .word.wrong {
+            background-color: #f44336;
+            color: white;
+            animation: shake 0.5s;
+        }
+
+        .word.selected {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+        #dataModal {
+            display: none;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            margin: 10% auto;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 10px;
+        }
+
+        .modal-content textarea {
+            width: 100%;
+            height: 200px;
+            margin-bottom: 10px;
+        }
+
+        .file-upload {
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        .file-upload input[type="file"] {
+            display: none;
+        }
+
+        .file-upload label {
+            background-color: #2196F3;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+
+        .file-upload label:hover {
+            background-color: #1976D2;
+        }
+
+        #result {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 20px;
+            color: #4CAF50;
+        }
+
+        #vocabCount {
+            margin: 10px 0;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                width: 90%;
+            }
+
+            .word {
+                font-size: 16px;
+            }
+
+            #studentName {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Nối để được đáp án đúng</h1>
+        <div>
+            <label for="vocabCount">Số lượng từ vựng (tối đa 10):</label>
+            <input type="number" id="vocabCount" value="5" min="1" max="10" />
+        </div>
+        <div class="button-group">
+            <button id="startBtn" class="btn start">Bắt đầu</button>
+            <button id="dataBtn" class="btn data">Dữ liệu</button>
+            <button id="shuffleBtn" class="btn data" style="display: none;">Xáo trộn</button>
+            <button id="resetBtn" class="btn reset" style="display: none;">Tiếp theo</button>
+        </div>
+        <div class="question">
+            <div class="box" id="studentName">Chọn học sinh</div>
+        </div>
+
+        <div class="word-pairs">
+            <div class="column" id="leftColumn"></div>
+            <div class="column" id="rightColumn"></div>
+        </div>
+
+        <div id="result"></div>
+
+        <div id="dataModal">
+            <div class="modal-content">
+                <h2>Nhập dữ liệu từ vựng và nghĩa:</h2>
+                <div class="file-upload">
+                    <label for="fileInput">
+                        Chọn file text
+                    </label>
+                    <input type="file" id="fileInput" accept=".txt">
+                </div>
+                <textarea id="vocabInput" style="font-size:15px;" placeholder="Nhập từ vựng và nghĩa theo cặp, mỗi dòng một cặp từ (ví dụ: 你好|xin chào)"></textarea>
+                <button id="saveDataBtn" class="btn data">Lưu dữ liệu</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const originalStudents = ['Nguyễn Đức Thành', 
+            'Nguyễn Khánh Phương', 
+            'Nguyễn Phương Nhi', 
+            'Nghiêm Diệu Linh', 
+            'Nguyễn Minh Hằng', 
+            'Nguyễn Đức Trung', 
+            'Hoàng Minh Thái', 
+            'Nguyễn Đức Bảo Phong', 
+            'Tạ Thị Ngọc Anh', 
+            'Vương Thanh Hà', 
+            'Hoàng Tuấn Thành', 
+            'Nguyễn Thị Trang', 
+            'Hoàng Thế Anh Quân', 
+            'Trịnh Công Minh', 
+            'Trịnh Anh Kiệt'];
+        
+        // Thêm dữ liệu mặc định
+        const defaultVocabPairs = [
+    { vocab: "现在", meaning: "bây giờ" },
+    { vocab: "钟", meaning: "đồng hồ, chuông" },
+    { vocab: "表", meaning: "đồng hồ đeo tay" },
+    { vocab: "手", meaning: "tay" },
+    { vocab: "点", meaning: "giờ" },
+    { vocab: "时", meaning: "thời gian, giờ, khi" },
+    { vocab: "分", meaning: "phút" },
+    { vocab: "秒", meaning: "giây" },
+    { vocab: "刻", meaning: "khắc, 15 phút" },
+    { vocab: "半", meaning: "nửa" },
+    { vocab: "差", meaning: "kém, thiếu" },
+    { vocab: "针", meaning: "kim đồng hồ" },
+    { vocab: "每", meaning: "mỗi" },
+    { vocab: "时候", meaning: "thời gian, lúc, khi" },
+    { vocab: "前", meaning: "trước" },
+    { vocab: "后", meaning: "sau" },
+    { vocab: "以前", meaning: "trước đây, trước khi" },
+    { vocab: "以后", meaning: "sau này, sau khi" },
+    { vocab: "早饭", meaning: "cơm sáng" },
+    { vocab: "午饭", meaning: "cơm trưa" },
+    { vocab: "晚饭", meaning: "cơm tối" },
+    { vocab: "睡觉", meaning: "ngủ" },
+    { vocab: "起床", meaning: "thức dậy" },
+    { vocab: "刷牙", meaning: "đánh răng" },
+    { vocab: "洗澡", meaning: "tắm" },
+    { vocab: "常", meaning: "thường" },
+    { vocab: "常常", meaning: "thường thường" },
+    { vocab: "平时", meaning: "bình thường" },
+    { vocab: "左右", meaning: "khoảng, xấp xỉ" },
+    { vocab: "快", meaning: "nhanh" },
+    { vocab: "慢", meaning: "chậm" },
+    { vocab: "早", meaning: "sớm" },
+    { vocab: "迟到", meaning: "đến muộn" },
+    { vocab: "一点", meaning: "một chút" },
+    { vocab: "坐", meaning: "ngồi" },
+    { vocab: "座", meaning: "tòa, chỗ ngồi" },
+    { vocab: "挂", meaning: "treo" },
+    { vocab: "闹", meaning: "làm ồn" },
+    { vocab: "闹钟", meaning: "đồng hồ báo thức" },
+    { vocab: "准时", meaning: "đúng giờ" },
+    { vocab: "出发", meaning: "xuất phát" },
+    { vocab: "医院", meaning: "bệnh viện" },
+    { vocab: "看", meaning: "xem, nhìn, khám" },
+    { vocab: "课", meaning: "bài học" },
+    { vocab: "节", meaning: "tiết học" },
+    { vocab: "上课", meaning: "lên lớp" },
+    { vocab: "下课", meaning: "tan học" },
+    { vocab: "教室", meaning: "phòng học" },
+    { vocab: "开", meaning: "mở" },
+    { vocab: "关", meaning: "đóng" },
+    { vocab: "门", meaning: "cửa" },
+    { vocab: "回", meaning: "quay về" },
+    { vocab: "等", meaning: "đợi" },
+    { vocab: "从", meaning: "từ" },
+    { vocab: "到", meaning: "đến" },
+];
+
+        let students = [...originalStudents];
+        let vocabPairs = [...defaultVocabPairs];
+        let selectedWord1 = null;
+        let selectedWord2 = null;
+        let correctPairs = {};
+        let matchedPairs = 0;
+
+        document.getElementById('startBtn').addEventListener('click', startGame);
+        document.getElementById('dataBtn').addEventListener('click', showDataModal);
+        document.getElementById('saveDataBtn').addEventListener('click', saveVocabData);
+        document.getElementById('resetBtn').addEventListener('click', resetGame);
+        document.getElementById('shuffleBtn').addEventListener('click', shuffleMeanings);
+        document.getElementById('fileInput').addEventListener('change', handleFileUpload);
+
+        function startGame() {
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('resetBtn').style.display = 'inline-block';
+            document.getElementById('shuffleBtn').style.display = 'inline-block';
+
+            let vocabCount = parseInt(document.getElementById('vocabCount').value);
+            if (vocabCount < 1 || vocabCount > 10) {
+                alert("Vui lòng nhập số lượng từ vựng từ 1 đến 10.");
+                return;
+            }
+
+            selectRandomStudent();
+            showVocabPairs(vocabCount);
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('vocabInput').value = e.target.result;
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        function selectRandomStudent() {
+            let studentNameBox = document.getElementById('studentName');
+            let interval = setInterval(() => {
+                studentNameBox.innerText = students[Math.floor(Math.random() * students.length)];
+            }, 100);
+
+            setTimeout(() => {
+                clearInterval(interval);
+                if (students.length === 0) {
+                    students = [...originalStudents];
+                }
+                let randomIndex = Math.floor(Math.random() * students.length);
+                let selectedStudent = students.splice(randomIndex, 1)[0];
+                studentNameBox.innerText = selectedStudent;
+            }, 2000);
+        }
+
+        function showVocabPairs(count) {
+            let leftColumn = document.getElementById('leftColumn');
+            let rightColumn = document.getElementById('rightColumn');
+            leftColumn.innerHTML = '';
+            rightColumn.innerHTML = '';
+            correctPairs = {};
+            selectedWord1 = null;
+            selectedWord2 = null;
+            matchedPairs = 0;
+
+            let randomPairs = vocabPairs.sort(() => 0.5 - Math.random()).slice(0, count);
+            let shuffledMeanings = randomPairs.map(pair => pair.meaning).sort(() => 0.5 - Math.random());
+
+            randomPairs.forEach((pair, index) => {
+                let leftWord = createWordElement(pair.vocab, 'left' + index, true);
+                let rightWord = createWordElement(shuffledMeanings[index], 'right' + index, false);
+
+                correctPairs[pair.vocab] = pair.meaning;
+
+                leftColumn.appendChild(leftWord);
+                rightColumn.appendChild(rightWord);
+            });
+
+            document.querySelector('.word-pairs').style.display = 'flex';
+            document.getElementById('result').innerText = '';
+        }
+
+        function createWordElement(text, id, isLeft) {
+            let wordElement = document.createElement('div');
+            wordElement.classList.add('word');
+            wordElement.id = id;
+            wordElement.innerText = text;
+            wordElement.addEventListener('click', selectWord);
+            wordElement.setAttribute('aria-label', isLeft ? 'Từ vựng: ' + text : 'Nghĩa: ' + text);
+
+            if (isLeft) {
+                wordElement.classList.add('chinese');
+            } else {
+                wordElement.classList.add('meaning');
+            }
+
+            return wordElement;
+        }
+
+        function selectWord() {
+            if (this.classList.contains('correct')) return;
+
+            if (!selectedWord1) {
+                selectedWord1 = this;
+                this.classList.add('selected');
+            } else if (!selectedWord2 && this !== selectedWord1) {
+                selectedWord2 = this;
+                this.classList.add('selected');
+
+                checkMatch();
+            }
+        }
+
+        function checkMatch() {
+            if (correctPairs[selectedWord1.innerText] === selectedWord2.innerText ||
+                correctPairs[selectedWord2.innerText] === selectedWord1.innerText) {
+                
+                selectedWord1.classList.add('correct');
+                selectedWord2.classList.add('correct');
+                matchedPairs++;
+
+                selectedWord1.remove();
+                selectedWord2.remove();
+
+                updateWordColumns();
+
+                if (matchedPairs === Object.keys(correctPairs).length) {
+                    showResult("Chúc mừng! Bạn đã hoàn thành bài tập.");
+                }
+            } else {
+                document.body.style.backgroundColor = "red";
+                setTimeout(() => {
+                    document.body.style.backgroundColor = "#f0f0f0";
+                }, 300);
+
+                selectedWord1.classList.add('wrong');
+                selectedWord2.classList.add('wrong');
+
+                setTimeout(() => {
+                    selectedWord1.classList.remove('wrong', 'selected');
+                    selectedWord2.classList.remove('wrong', 'selected');
+                }, 500);
+}
+
+            setTimeout(() => {
+                selectedWord1.classList.remove('selected');
+                selectedWord2.classList.remove('selected');
+                selectedWord1 = null;
+                selectedWord2 = null;
+            }, 500);
+        }
+
+        function updateWordColumns() {
+            const leftColumn = document.getElementById('leftColumn');
+            const rightColumn = document.getElementById('rightColumn');
+
+            Array.from(leftColumn.children).forEach(node => {
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                    leftColumn.appendChild(node);
+                }
+            });
+
+            Array.from(rightColumn.children).forEach(node => {
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                    rightColumn.appendChild(node);
+                }
+            });
+        }
+
+        function shuffleMeanings() {
+            let rightColumn = document.getElementById('rightColumn');
+            let meanings = Array.from(rightColumn.children);
+            rightColumn.innerHTML = '';
+
+            meanings.sort(() => Math.random() - 0.5);
+
+            meanings.forEach(meaning => {
+                rightColumn.appendChild(meaning);
+            });
+        }
+
+        function showDataModal() {
+            document.getElementById('dataModal').style.display = 'block';
+        }
+
+        function saveVocabData() {
+            let inputText = document.getElementById('vocabInput').value.trim();
+            if (!inputText) {
+                // Nếu không có dữ liệu nhập vào, sử dụng dữ liệu mặc định
+                vocabPairs = [...defaultVocabPairs];
+                document.getElementById('dataModal').style.display = 'none';
+                alert("Sử dụng dữ liệu mặc định!");
+                return;
+            }
+
+            let lines = inputText.split('\n');
+            try {
+                vocabPairs = lines.map(line => {
+                    let [vocab, meaning] = line.split('|');
+                    if (!vocab || !meaning) {
+                        throw new Error("Định dạng không hợp lệ. Mỗi dòng phải có từ vựng và nghĩa, cách nhau bởi dấu '|' (dấu ống).");
+                    }
+                    return { vocab: vocab.trim(), meaning: meaning.trim() };
+                });
+
+                document.getElementById('dataModal').style.display = 'none';
+                localStorage.setItem('vocabPairs', JSON.stringify(vocabPairs));
+                alert("Dữ liệu đã được lưu thành công!");
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        function resetGame() {
+            selectRandomStudent();
+            showVocabPairs(parseInt(document.getElementById('vocabCount').value));
+            document.getElementById('result').innerText = '';
+        }
+
+        function showResult(message) {
+            document.getElementById('result').innerText = message;
+        }
+
+        // Khởi tạo khi tải trang
+        window.onload = function() {
+            let savedPairs = localStorage.getItem('vocabPairs');
+            if (savedPairs) {
+                vocabPairs = JSON.parse(savedPairs);
+                document.getElementById('vocabInput').value = vocabPairs.map(pair => `${pair.vocab}|${pair.meaning}`).join('\n');
+            } else {
+                // Nếu không có dữ liệu đã lưu, sử dụng dữ liệu mặc định
+                document.getElementById('vocabInput').value = defaultVocabPairs.map(pair => `${pair.vocab}|${pair.meaning}`).join('\n');
+            }
+
+            // Đóng modal khi click bên ngoài
+            window.onclick = function(event) {
+                let modal = document.getElementById('dataModal');
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            };
+        };
+    </script>
+</body>
+</html>
